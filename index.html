@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Canvas Store | Premium Home Décor</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  FREE SHIPPING ON ORDERS ABOVE ₹999
+</div>
+
+<!-- NAVBAR -->
+<header class="navbar">
+
+  <a href="#" class="logo">
+    <span class="logo-circle">C</span>
+    <span>CANVAS <b>STORE</b></span>
+  </a>
+
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#shop">Shop</a>
+    <a href="#collections">Collections</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </nav>
+
+  <div class="nav-buttons">
+    <button onclick="openSearch()">⌕</button>
+
+    <button onclick="openCart()">
+      Bag <span id="cartCount">0</span>
+    </button>
+  </div>
+
+</header>
+
+
+<!-- HERO -->
+<section class="hero" id="home">
+
+  <div class="hero-text">
+
+    <p class="small-title">
+      THE ART OF BEAUTIFUL LIVING
+    </p>
+
+    <h1>
+      Make your space
+      <em>extraordinary.</em>
+    </h1>
+
+    <p>
+      Discover premium lamps, artistic showpieces and
+      elegant décor pieces designed to transform
+      everyday spaces.
+    </p>
+
+    <div class="hero-buttons">
+
+      <a href="#shop" class="btn primary">
+        SHOP COLLECTION
+      </a>
+
+      <a href="#collections" class="btn secondary">
+        EXPLORE STYLES
+      </a>
+
+    </div>
+
+  </div>
+
+
+  <div class="hero-design">
+
+    <div class="gold-circle"></div>
+
+    <div class="star-lamp">
+      ★
+    </div>
+
+    <div class="design-card one">
+      PREMIUM<br>
+      <strong>FORM</strong>
+    </div>
+
+    <div class="design-card two">
+      WARM<br>
+      <strong>LIGHT</strong>
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- FEATURES -->
+<section class="features">
+
+  <div>
+    <b>01</b>
+    <span>Premium Designs</span>
+  </div>
+
+  <div>
+    <b>02</b>
+    <span>Curated Collection</span>
+  </div>
+
+  <div>
+    <b>03</b>
+    <span>Gift Ready</span>
+  </div>
+
+  <div>
+    <b>04</b>
+    <span>Modern Décor</span>
+  </div>
+
+</section>
+
+
+<!-- COLLECTIONS -->
+<section class="section" id="collections">
+
+  <div class="section-heading">
+
+    <div>
+      <p class="small-title">
+        CURATED COLLECTIONS
+      </p>
+
+      <h2>
+        Choose your mood.
+      </h2>
+    </div>
+
+    <p>
+      Discover statement pieces designed
+      for modern interiors.
+    </p>
+
+  </div>
+
+
+  <div class="collections">
+
+    <div class="collection collection-big">
+      <span>01</span>
+
+      <h3>
+        Sculptural<br>
+        Showpieces
+      </h3>
+
+      <a href="#shop">
+        Explore →
+      </a>
+    </div>
+
+
+    <div class="collection">
+      <span>02</span>
+
+      <h3>
+        Ambient<br>
+        Lighting
+      </h3>
+
+      <a href="#shop">
+        Explore →
+      </a>
+    </div>
+
+
+    <div class="collection dark">
+      <span>03</span>
+
+      <h3>
+        Luxury<br>
+        Accents
+      </h3>
+
+      <a href="#shop">
+        Explore →
+      </a>
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- PRODUCTS -->
+<section class="section shop" id="shop">
+
+  <div class="section-heading">
+
+    <div>
+
+      <p class="small-title">
+        THE COLLECTION
+      </p>
+
+      <h2>
+        Best Sellers.
+      </h2>
+
+    </div>
+
+    <div class="filters">
+
+      <button class="active" onclick="filterProducts('all',this)">
+        All
+      </button>
+
+      <button onclick="filterProducts('showpiece',this)">
+        Showpieces
+      </button>
+
+      <button onclick="filterProducts('lamp',this)">
+        Lamps
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div id="products" class="products"></div>
+
+</section>
+
+
+<!-- ABOUT -->
+<section class="about" id="about">
+
+  <div class="about-image">
+
+    <div class="about-art">
+      ★
+    </div>
+
+  </div>
+
+
+  <div class="about-text">
+
+    <p class="small-title">
+      WHY CANVAS STORE
+    </p>
+
+    <h2>
+      Luxury is in
+      <em>the details.</em>
+    </h2>
+
+    <p>
+      We believe décor should do more than fill a shelf.
+      Every Canvas Store piece is selected for its
+      silhouette, finish and ability to make a space
+      feel more personal.
+    </p>
+
+    <p>
+      From elegant lighting to artistic sculptures,
+      our collection is created for people who want
+      their home to have personality.
+    </p>
+
+    <a href="#shop">
+      Discover the collection →
+    </a>
+
+  </div>
+
+</section>
+
+
+<!-- NEWSLETTER -->
+<section class="newsletter">
+
+  <p class="small-title">
+    JOIN THE CANVAS CIRCLE
+  </p>
+
+  <h2>
+    First look at new arrivals.
+  </h2>
+
+  <form onsubmit="subscribe(event)">
+
+    <input
+      type="email"
+      placeholder="Your email address"
+      required
+    >
+
+    <button>
+      SUBSCRIBE
+    </button>
+
+  </form>
+
+  <small id="subscribeMessage"></small>
+
+</section>
+
+
+<!-- FOOTER -->
+<footer id="contact">
+
+  <div class="footer-brand">
+
+    <div class="logo">
+      <span class="logo-circle">C</span>
+      <span>CANVAS <b>STORE</b></span>
+    </div>
+
+    <p>
+      Premium décor for spaces with personality.
+    </p>
+
+  </div>
+
+
+  <div>
+
+    <h4>SHOP</h4>
+
+    <a href="#shop">All Products</a>
+    <a href="#shop">Showpieces</a>
+    <a href="#shop">Lamps</a>
+
+  </div>
+
+
+  <div>
+
+    <h4>HELP</h4>
+
+    <a href="#">Shipping</a>
+    <a href="#">Returns</a>
+    <a href="#">Privacy</a>
+
+  </div>
+
+
+  <div>
+
+    <h4>FOLLOW</h4>
+
+    <a href="#">Instagram</a>
+    <a href="#">YouTube</a>
+    <a href="#">Facebook</a>
+
+  </div>
+
+
+  <div class="copyright">
+
+    © 2026 Canvas Store. All Rights Reserved.
+
+  </div>
+
+</footer>
+
+
+<!-- CART -->
+<div id="overlay" class="overlay">
+
+  <div class="cart">
+
+    <div class="cart-header">
+
+      <h2>Your Bag</h2>
+
+      <button onclick="closeCart()">×</button>
+
+    </div>
+
+    <div id="cartItems"></div>
+
+    <div class="cart-bottom">
+
+      <div>
+        <span>Total</span>
+        <strong id="cartTotal">₹0</strong>
+      </div>
+
+      <button onclick="checkout()">
+        PROCEED TO CHECKOUT
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
