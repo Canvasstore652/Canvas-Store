@@ -1,45 +1,33 @@
-const products = [
+const SUPABASE_URL = "https://prywmsmpnyvoskmnkckm.supabase.co";
+const SUPABASE_KEY = "sb_publishable_QWiT8eswERtvNgrHAxQZFw_SB8aHgMg";
 
-  {
-    id: 1,
-    name: "Premium Star LED Lamp",
-    category: "lamp",
-    price: 899,
-    oldPrice: 1499,
-    type: "lamp"
-  },
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
-  {
-    id: 2,
-    name: "Sliding Panther Showpiece",
-    category: "showpiece",
-    price: 899,
-    oldPrice: 1499,
-    type: "panther"
-  },
+let products = [];
+let cart = [];
 
-  {
-    id: 3,
-    name: "Twin Towers Malaysia Showpiece",
-    category: "showpiece",
-    price: 599,
-    oldPrice: 999,
-    type: "panther"
-  },
 
-  {
-    id: 4,
-    name: "Premium Decorative Water Fountain",
-    category: "showpiece",
-    price: 1299,
-    oldPrice: 1999,
-    type: "panther"
+/* LOAD PRODUCTS FROM SUPABASE */
+
+async function loadProducts() {
+
+  const { data, error } = await supabaseClient
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Product loading error:", error);
+    return;
   }
 
-];
+  products = data || [];
 
-
-let cart = [];
+  displayProducts(products);
+}
 
 
 /* SHOW PRODUCTS */
@@ -47,6 +35,8 @@ let cart = [];
 function displayProducts(list = products) {
 
   const container = document.getElementById("products");
+
+  if (!container) return;
 
   container.innerHTML = "";
 
@@ -56,40 +46,35 @@ function displayProducts(list = products) {
 
     card.className = "product";
 
-    let visual =
-      product.type === "lamp"
-        ? `<div class="lamp-icon">★</div>`
-        : `<div class="panther-icon"></div>`;
+    const image = product.image
+      ? `<img src="${product.image}" alt="${product.name}">`
+      : `<div class="panther-icon"></div>`;
 
     card.innerHTML = `
 
       <div class="product-image">
-
-        ${visual}
-
+        ${image}
       </div>
 
       <div class="product-info">
 
-        <h3>
-          ${product.name}
-        </h3>
+        <h3>${product.name}</h3>
 
         <p>
           Premium Canvas Store Collection
         </p>
 
         <span class="price">
-          ₹${product.price.toLocaleString("en-IN")}
+          ₹${Number(product.price || 0).toLocaleString("en-IN")}
         </span>
 
         <span class="old">
-          ₹${product.oldPrice.toLocaleString("en-IN")}
+          ₹${Number(product.mrp || 0).toLocaleString("en-IN")}
         </span>
 
         <button
           class="add"
-          onclick="addToCart(${product.id})"
+          onclick="addToCart('${product.id}')"
         >
           ADD
         </button>
@@ -104,9 +89,6 @@ function displayProducts(list = products) {
 }
 
 
-displayProducts();
-
-
 /* FILTER */
 
 function filterProducts(category, button) {
@@ -115,7 +97,9 @@ function filterProducts(category, button) {
     .querySelectorAll(".filters button")
     .forEach(btn => btn.classList.remove("active"));
 
-  button.classList.add("active");
+  if (button) {
+    button.classList.add("active");
+  }
 
   if (category === "all") {
 
@@ -139,7 +123,9 @@ function filterProducts(category, button) {
 function addToCart(id) {
 
   const product =
-    products.find(item => item.id === id);
+    products.find(item => String(item.id) === String(id));
+
+  if (!product) return;
 
   cart.push(product);
 
@@ -150,19 +136,25 @@ function addToCart(id) {
 
 function updateCart() {
 
-  document.getElementById("cartCount").innerText =
-    cart.length;
+  const count =
+    document.getElementById("cartCount");
+
+  if (count) {
+    count.innerText = cart.length;
+  }
 
   const container =
     document.getElementById("cartItems");
+
+  if (!container) return;
 
   container.innerHTML = "";
 
   let total = 0;
 
-  cart.forEach((product,index) => {
+  cart.forEach((product, index) => {
 
-    total += product.price;
+    total += Number(product.price || 0);
 
     const item =
       document.createElement("div");
@@ -179,7 +171,7 @@ function updateCart() {
 
         <br>
 
-        ₹${product.price.toLocaleString("en-IN")}
+        ₹${Number(product.price || 0).toLocaleString("en-IN")}
 
       </div>
 
@@ -195,15 +187,22 @@ function updateCart() {
 
   });
 
-  document.getElementById("cartTotal").innerText =
-    "₹" + total.toLocaleString("en-IN");
+  const totalElement =
+    document.getElementById("cartTotal");
+
+  if (totalElement) {
+
+    totalElement.innerText =
+      "₹" + total.toLocaleString("en-IN");
+
+  }
 
 }
 
 
 function removeFromCart(index) {
 
-  cart.splice(index,1);
+  cart.splice(index, 1);
 
   updateCart();
 
@@ -264,9 +263,7 @@ function subscribe(event) {
 function openSearch() {
 
   const search =
-    prompt(
-      "What are you looking for?"
-    );
+    prompt("What are you looking for?");
 
   if (!search) return;
 
@@ -292,3 +289,8 @@ function openSearch() {
   }
 
 }
+
+
+/* START WEBSITE */
+
+loadProducts();
