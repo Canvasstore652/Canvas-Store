@@ -1,11 +1,796 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Canvas Store | Premium Home Décor</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"></head><body>
-<div class="top">✨ PREMIUM HOME DÉCOR • SECURE SHOPPING • NEW PRODUCTS ADDED REGULARLY</div>
-<header><div class="head"><button class="menu" onclick="document.querySelector('nav').classList.toggle('open')">☰</button><a class="brand" href="#home"><i>C</i><b>CANVAS<small>STORE</small></b></a><div class="search"><input id="search" placeholder="Search products, lamps, showpieces..." oninput="apply()"><button onclick="apply()">🔍</button></div><div class="actions"><button onclick="shop()">🛍️ Shop</button><button onclick="openCart()">🛒 Cart <em id="count">0</em></button></div></div><nav><a href="#home">Home</a><a href="#shop">All Products</a><a href="#shop" onclick="cat('showpiece')">Showpieces</a><a href="#shop" onclick="cat('lamp')">Lamps</a><a href="#shop" onclick="cat('decor')">Home Décor</a><a href="#about">About</a></nav></header>
-<main id="home"><section class="hero"><div><label>CANVAS STORE COLLECTION</label><h1>Make your home<br><span>look premium.</span></h1><p>Stylish showpieces, decorative lamps and statement décor for every corner of your home.</p><div class="buttons"><a class="btn blue" href="#shop">SHOP NOW</a><a class="btn" href="#shop">EXPLORE COLLECTION</a></div><small class="points">✓ Premium designs &nbsp; ✓ Pan-India delivery &nbsp; ✓ 100+ products ready</small></div><div class="visual"><div class="circle"></div><div class="art">✦</div><div class="tag">PREMIUM<br><b>HOME DÉCOR</b></div></div></section>
-<section class="quick"><button onclick="cat('all')">✨ All Products</button><button onclick="cat('showpiece')">🏛️ Showpieces</button><button onclick="cat('lamp')">💡 Lamps</button><button onclick="cat('lighting')">🔆 Lighting</button><button onclick="cat('decor')">🏠 Home Décor</button></section>
-<section id="shop" class="shop"><div class="shophead"><div><label>SHOP CANVAS STORE</label><h2>Featured <span>Products</span></h2><p id="summary">Loading products...</p></div><select id="sort" onchange="apply()"><option value="latest">Latest</option><option value="low">Price: Low to High</option><option value="high">Price: High to Low</option><option value="discount">Highest Discount</option><option value="name">Name A-Z</option></select></div><div class="tabs"><button class="active" data-cat="all" onclick="cat('all')">All</button><button data-cat="showpiece" onclick="cat('showpiece')">Showpieces</button><button data-cat="lamp" onclick="cat('lamp')">Lamps</button><button data-cat="lighting" onclick="cat('lighting')">Lighting</button><button data-cat="decor" onclick="cat('decor')">Home Décor</button></div><div id="products" class="products"><div class="loading">Loading Canvas Store...</div></div></section>
-<section class="trust"><div>🔒 <b>Secure Shopping</b><small>Protected checkout</small></div><div>🚚 <b>Fast Delivery</b><small>Across India</small></div><div>⭐ <b>Premium Collection</b><small>Curated décor</small></div><div>💬 <b>Customer Support</b><small>We're here to help</small></div></section>
-<section id="about" class="about"><div class="aboutart">C</div><div><label>ABOUT CANVAS STORE</label><h2>Décor that makes<br><span>the difference.</span></h2><p>Canvas Store brings premium-looking home décor, statement showpieces and decorative lighting into one marketplace.</p><p>Add products through your admin panel and they automatically appear here. The catalogue is database-driven and can grow to 100+ products.</p><a href="#shop">Explore all products →</a></div></section></main>
-<footer><div><div class="brand"><i>C</i><b>CANVAS<small>STORE</small></b></div><p>Premium home décor, showpieces and decorative lighting.</p></div><div><h4>SHOP</h4><a href="#shop">All Products</a><a href="#shop" onclick="cat('showpiece')">Showpieces</a><a href="#shop" onclick="cat('lamp')">Lamps</a></div><div><h4>HELP</h4><a href="#about">About Us</a><a href="#">Contact</a><a href="#">Shipping</a></div><div><h4>CANVAS STORE</h4><a href="#home">Home</a><a href="#shop">Collections</a></div><p class="copy">© 2026 Canvas Store. All rights reserved.</p></footer>
-<div id="overlay" class="overlay" onclick="closeCart(event)"><aside class="cart" onclick="event.stopPropagation()"><div class="carthead"><h3>Shopping Cart</h3><button onclick="closeCart()">×</button></div><div id="items"></div><div id="empty" class="empty">Your cart is empty.<br><a href="#shop" onclick="closeCart()">Start shopping →</a></div><div class="cartfoot"><div>Subtotal <b id="total">₹0</b></div><button onclick="checkout()">PROCEED TO CHECKOUT</button></div></aside></div><div id="toast" class="toast"></div>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script><script>const SUPABASE_URL="https://prywmsmpnyvoskmnkckm.supabase.co";const SUPABASE_KEY="sb_publishable_QWiT8eswERtvNgrHAxQZFw_SB8aHgMg";const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);</script><script src="script.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>Canvas Store | Premium Home Décor</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- ================= TOP BAR ================= -->
+
+<div class="top-strip">
+  ✨ PREMIUM HOME DÉCOR &nbsp; • &nbsp;
+  SECURE SHOPPING &nbsp; • &nbsp;
+  PAN-INDIA DELIVERY
+</div>
+
+
+<!-- ================= HEADER ================= -->
+
+<header class="main-header">
+
+  <div class="header-inner">
+
+    <button
+      class="mobile-menu"
+      onclick="document.querySelector('nav').classList.toggle('open')">
+      ☰
+    </button>
+
+    <a href="#home" class="logo">
+
+      <span class="logo-circle">C</span>
+
+      <span class="logo-text">
+        CANVAS
+        <small>STORE</small>
+      </span>
+
+    </a>
+
+
+    <div class="search-box">
+
+      <input
+        id="search"
+        type="search"
+        placeholder="Search products, lamps, showpieces..."
+        oninput="apply()"
+      >
+
+      <button onclick="apply()">
+        🔍
+      </button>
+
+    </div>
+
+
+    <div class="header-actions">
+
+      <button onclick="shop()">
+        🛍️ Shop
+      </button>
+
+      <button onclick="openCart()">
+        🛒 Cart
+        <span id="count" class="cart-count">0</span>
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- NAVIGATION -->
+
+  <nav>
+
+    <a href="#home">
+      Home
+    </a>
+
+    <a href="#shop">
+      All Products
+    </a>
+
+    <a href="#shop" onclick="cat('showpiece')">
+      Showpieces
+    </a>
+
+    <a href="#shop" onclick="cat('lamp')">
+      Lamps
+    </a>
+
+    <a href="#shop" onclick="cat('lighting')">
+      Lighting
+    </a>
+
+    <a href="#shop" onclick="cat('decor')">
+      Home Décor
+    </a>
+
+  </nav>
+
+</header>
+
+
+<!-- ================= MAIN ================= -->
+
+<main id="home">
+
+
+  <!-- HERO -->
+
+  <section class="hero">
+
+    <div class="hero-content">
+
+      <div class="hero-label">
+        CANVAS STORE COLLECTION
+      </div>
+
+      <h1>
+        Premium décor.
+        <br>
+        <span>Made for your home.</span>
+      </h1>
+
+      <p>
+        Discover stylish showpieces, decorative lamps
+        and premium home décor.
+      </p>
+
+      <div class="hero-buttons">
+
+        <a href="#shop" class="hero-btn primary">
+          SHOP NOW
+        </a>
+
+        <a href="#shop" class="hero-btn secondary">
+          EXPLORE COLLECTION
+        </a>
+
+      </div>
+
+      <div class="hero-points">
+        ✓ Premium Designs
+        &nbsp;&nbsp;
+        ✓ Pan-India Delivery
+        &nbsp;&nbsp;
+        ✓ 100+ Products
+      </div>
+
+    </div>
+
+
+    <div class="hero-art">
+
+      <div class="hero-circle"></div>
+
+      <div class="hero-star">
+        ✦
+      </div>
+
+      <div class="hero-card">
+        PREMIUM
+        <strong>HOME DÉCOR</strong>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ================= SHOP ================= -->
+
+  <section id="shop" class="marketplace">
+
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="filters">
+
+      <div class="filter-title">
+        <strong>Filters</strong>
+
+        <button
+          onclick="window.location.hash='shop'; location.reload();">
+          Reset
+        </button>
+      </div>
+
+
+      <!-- CATEGORY -->
+
+      <div class="filter-section">
+
+        <div class="filter-heading">
+          CATEGORY
+          <span>⌃</span>
+        </div>
+
+        <label>
+          <input
+            type="radio"
+            name="category"
+            checked
+            onclick="cat('all')">
+          All Products
+        </label>
+
+        <label>
+          <input
+            type="radio"
+            name="category"
+            onclick="cat('showpiece')">
+          Showpieces
+        </label>
+
+        <label>
+          <input
+            type="radio"
+            name="category"
+            onclick="cat('lamp')">
+          Lamps
+        </label>
+
+        <label>
+          <input
+            type="radio"
+            name="category"
+            onclick="cat('lighting')">
+          Lighting
+        </label>
+
+        <label>
+          <input
+            type="radio"
+            name="category"
+            onclick="cat('decor')">
+          Home Décor
+        </label>
+
+      </div>
+
+
+      <!-- PRICE -->
+
+      <div class="filter-section">
+
+        <div class="filter-heading">
+          PRICE
+          <span>⌃</span>
+        </div>
+
+        <select id="minPrice">
+          <option value="0">Min</option>
+          <option value="500">₹500</option>
+          <option value="1000">₹1,000</option>
+          <option value="2000">₹2,000</option>
+          <option value="5000">₹5,000</option>
+        </select>
+
+        <span class="to-text">to</span>
+
+        <select id="maxPrice">
+          <option value="999999">₹3000+</option>
+          <option value="1000">₹1,000</option>
+          <option value="2000">₹2,000</option>
+          <option value="3000">₹3,000</option>
+          <option value="5000">₹5,000</option>
+          <option value="10000">₹10,000+</option>
+        </select>
+
+        <button
+          class="filter-apply"
+          onclick="applyPriceFilter()">
+          Apply
+        </button>
+
+      </div>
+
+
+      <!-- PURPOSE -->
+
+      <div class="filter-section">
+
+        <div class="filter-heading">
+          PURPOSE
+          <span>⌃</span>
+        </div>
+
+        <label>
+          <input type="checkbox">
+          Home Decoration
+        </label>
+
+        <label>
+          <input type="checkbox">
+          Table Décor
+        </label>
+
+        <label>
+          <input type="checkbox">
+          Room Decoration
+        </label>
+
+        <label>
+          <input type="checkbox">
+          Gift
+        </label>
+
+      </div>
+
+
+      <!-- SUITABLE FOR -->
+
+      <div class="filter-section">
+
+        <div class="filter-heading">
+          SUITABLE FOR
+          <span>⌃</span>
+        </div>
+
+        <label>
+          <input type="checkbox">
+          Living Room
+        </label>
+
+        <label>
+          <input type="checkbox">
+          Bedroom
+        </label>
+
+        <label>
+          <input type="checkbox">
+          Office
+        </label>
+
+        <label>
+          <input type="checkbox">
+          Kids Room
+        </label>
+
+      </div>
+
+
+      <!-- BRAND -->
+
+      <div class="filter-section">
+
+        <div class="filter-heading">
+          BRAND
+          <span>⌃</span>
+        </div>
+
+        <label>
+          <input type="checkbox">
+          Canvas Store
+        </label>
+
+      </div>
+
+
+      <!-- RATINGS -->
+
+      <div class="filter-section">
+
+        <div class="filter-heading">
+          CUSTOMER RATINGS
+          <span>⌃</span>
+        </div>
+
+        <label>
+          <input type="checkbox">
+          ⭐ 4★ & above
+        </label>
+
+        <label>
+          <input type="checkbox">
+          ⭐ 3★ & above
+        </label>
+
+        <label>
+          <input type="checkbox">
+          ⭐ 2★ & above
+        </label>
+
+        <label>
+          <input type="checkbox">
+          ⭐ 1★ & above
+        </label>
+
+      </div>
+
+
+      <!-- DELIVERY -->
+
+      <div class="filter-section">
+
+        <div class="filter-heading">
+          DELIVERY
+          <span>⌃</span>
+        </div>
+
+        <label>
+          <input type="checkbox">
+          Delivery in 1 day
+        </label>
+
+        <label>
+          <input type="checkbox">
+          Free Delivery
+        </label>
+
+      </div>
+
+
+    </aside>
+
+
+    <!-- ================= PRODUCT AREA ================= -->
+
+    <section class="product-area">
+
+
+      <div class="shop-heading">
+
+        <div>
+
+          <div class="small-heading">
+            SHOP CANVAS STORE
+          </div>
+
+          <h2>
+            All Products
+          </h2>
+
+          <p id="summary">
+            Loading products...
+          </p>
+
+        </div>
+
+
+        <div class="sort-area">
+
+          <label>
+            Sort By
+          </label>
+
+          <select
+            id="sort"
+            onchange="apply()">
+
+            <option value="latest">
+              Latest
+            </option>
+
+            <option value="low">
+              Price: Low to High
+            </option>
+
+            <option value="high">
+              Price: High to Low
+            </option>
+
+            <option value="discount">
+              Highest Discount
+            </option>
+
+            <option value="name">
+              Name A-Z
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <!-- CATEGORY TABS -->
+
+      <div class="category-tabs">
+
+        <button
+          class="active"
+          onclick="cat('all')">
+          All
+        </button>
+
+        <button onclick="cat('showpiece')">
+          Showpieces
+        </button>
+
+        <button onclick="cat('lamp')">
+          Lamps
+        </button>
+
+        <button onclick="cat('lighting')">
+          Lighting
+        </button>
+
+        <button onclick="cat('decor')">
+          Home Décor
+        </button>
+
+      </div>
+
+
+      <!-- PRODUCTS -->
+
+      <div
+        id="products"
+        class="products">
+
+        <div class="loading">
+          Loading Canvas Store...
+        </div>
+
+      </div>
+
+
+    </section>
+
+  </section>
+
+
+  <!-- ================= TRUST ================= -->
+
+  <section class="trust">
+
+    <div>
+      🔒
+      <strong>Secure Shopping</strong>
+      <small>Safe & protected</small>
+    </div>
+
+    <div>
+      🚚
+      <strong>Fast Delivery</strong>
+      <small>Across India</small>
+    </div>
+
+    <div>
+      ⭐
+      <strong>Premium Collection</strong>
+      <small>Curated décor</small>
+    </div>
+
+    <div>
+      💬
+      <strong>Customer Support</strong>
+      <small>We're here to help</small>
+    </div>
+
+  </section>
+
+
+</main>
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer>
+
+  <div class="footer-brand">
+
+    <div class="logo">
+
+      <span class="logo-circle">
+        C
+      </span>
+
+      <span class="logo-text">
+        CANVAS
+        <small>STORE</small>
+      </span>
+
+    </div>
+
+    <p>
+      Premium home décor,
+      showpieces and decorative lighting.
+    </p>
+
+  </div>
+
+
+  <div>
+
+    <h4>SHOP</h4>
+
+    <a href="#shop">
+      All Products
+    </a>
+
+    <a href="#shop"
+       onclick="cat('showpiece')">
+      Showpieces
+    </a>
+
+    <a href="#shop"
+       onclick="cat('lamp')">
+      Lamps
+    </a>
+
+  </div>
+
+
+  <div>
+
+    <h4>HELP</h4>
+
+    <a href="#">
+      Contact
+    </a>
+
+    <a href="#">
+      Shipping
+    </a>
+
+    <a href="#">
+      Returns
+    </a>
+
+  </div>
+
+
+  <div>
+
+    <h4>CANVAS STORE</h4>
+
+    <a href="#home">
+      Home
+    </a>
+
+    <a href="#shop">
+      Collections
+    </a>
+
+  </div>
+
+
+  <div class="copyright">
+    © 2026 Canvas Store. All rights reserved.
+  </div>
+
+</footer>
+
+
+<!-- ================= CART ================= -->
+
+<div
+  id="overlay"
+  class="overlay"
+  onclick="closeCart(event)">
+
+  <aside
+    class="cart"
+    onclick="event.stopPropagation()">
+
+    <div class="cart-header">
+
+      <h3>
+        Shopping Cart
+      </h3>
+
+      <button
+        onclick="closeCart()">
+        ×
+      </button>
+
+    </div>
+
+
+    <div id="items"></div>
+
+
+    <div
+      id="empty"
+      class="empty">
+
+      Your cart is empty.
+
+      <br>
+
+      <a
+        href="#shop"
+        onclick="closeCart()">
+
+        Start shopping →
+      </a>
+
+    </div>
+
+
+    <div class="cart-footer">
+
+      <div>
+        Subtotal
+        <strong id="total">
+          ₹0
+        </strong>
+      </div>
+
+      <button onclick="checkout()">
+        PROCEED TO CHECKOUT
+      </button>
+
+    </div>
+
+  </aside>
+
+</div>
+
+
+<div
+  id="toast"
+  class="toast">
+</div>
+
+
+<!-- ================= SUPABASE ================= -->
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<script>
+
+const SUPABASE_URL =
+  "https://prywmsmpnyvoskmnkckm.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_QWiT8eswERtvNgrHAxQZFw_SB8aHgMg";
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+</script>
+
+
+<script src="script.js"></script>
+
+
+<!-- PRICE FILTER -->
+
+<script>
+
+function applyPriceFilter() {
+
+  const min =
+    Number(
+      document.getElementById("minPrice").value
+    );
+
+  const max =
+    Number(
+      document.getElementById("maxPrice").value
+    );
+
+  if (!window.products) return;
+
+  const filtered =
+    window.products.filter(function(product) {
+
+      const price =
+        Number(product.price || 0);
+
+      return price >= min && price <= max;
+
+    });
+
+  if (
+    typeof renderProducts === "function"
+  ) {
+    renderProducts(filtered);
+  }
+
+}
+
+</script>
+
+
+</body>
+</html>
