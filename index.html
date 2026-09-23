@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -8,19 +9,27 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
+
+  <!-- SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
 
 <body>
 
 <!-- TOP BAR -->
+
 <div class="topbar">
   FREE SHIPPING ON ORDERS ABOVE ₹999
 </div>
 
+
 <!-- NAVBAR -->
+
 <header class="navbar">
 
   <a href="#" class="logo">
@@ -37,17 +46,20 @@
   </nav>
 
   <div class="nav-buttons">
+
     <button onclick="openSearch()">⌕</button>
 
     <button onclick="openCart()">
       Bag <span id="cartCount">0</span>
     </button>
+
   </div>
 
 </header>
 
 
 <!-- HERO -->
+
 <section class="hero" id="home">
 
   <div class="hero-text">
@@ -106,6 +118,7 @@
 
 
 <!-- FEATURES -->
+
 <section class="features">
 
   <div>
@@ -132,11 +145,13 @@
 
 
 <!-- COLLECTIONS -->
+
 <section class="section" id="collections">
 
   <div class="section-heading">
 
     <div>
+
       <p class="small-title">
         CURATED COLLECTIONS
       </p>
@@ -144,6 +159,7 @@
       <h2>
         Choose your mood.
       </h2>
+
     </div>
 
     <p>
@@ -157,6 +173,7 @@
   <div class="collections">
 
     <div class="collection collection-big">
+
       <span>01</span>
 
       <h3>
@@ -167,10 +184,12 @@
       <a href="#shop">
         Explore →
       </a>
+
     </div>
 
 
     <div class="collection">
+
       <span>02</span>
 
       <h3>
@@ -181,10 +200,12 @@
       <a href="#shop">
         Explore →
       </a>
+
     </div>
 
 
     <div class="collection dark">
+
       <span>03</span>
 
       <h3>
@@ -195,6 +216,7 @@
       <a href="#shop">
         Explore →
       </a>
+
     </div>
 
   </div>
@@ -203,6 +225,7 @@
 
 
 <!-- PRODUCTS -->
+
 <section class="section shop" id="shop">
 
   <div class="section-heading">
@@ -221,15 +244,22 @@
 
     <div class="filters">
 
-      <button class="active" onclick="filterProducts('all',this)">
+      <button
+        class="active"
+        onclick="filterProducts('all',this)"
+      >
         All
       </button>
 
-      <button onclick="filterProducts('showpiece',this)">
+      <button
+        onclick="filterProducts('showpiece',this)"
+      >
         Showpieces
       </button>
 
-      <button onclick="filterProducts('lamp',this)">
+      <button
+        onclick="filterProducts('lamp',this)"
+      >
         Lamps
       </button>
 
@@ -238,12 +268,15 @@
   </div>
 
 
+  <!-- SUPABASE PRODUCTS WILL APPEAR HERE -->
+
   <div id="products" class="products"></div>
 
 </section>
 
 
 <!-- ABOUT -->
+
 <section class="about" id="about">
 
   <div class="about-image">
@@ -289,6 +322,7 @@
 
 
 <!-- NEWSLETTER -->
+
 <section class="newsletter">
 
   <p class="small-title">
@@ -319,13 +353,19 @@
 
 
 <!-- FOOTER -->
+
 <footer id="contact">
 
   <div class="footer-brand">
 
     <div class="logo">
+
       <span class="logo-circle">C</span>
-      <span>CANVAS <b>STORE</b></span>
+
+      <span>
+        CANVAS <b>STORE</b>
+      </span>
+
     </div>
 
     <p>
@@ -378,6 +418,7 @@
 
 
 <!-- CART -->
+
 <div id="overlay" class="overlay">
 
   <div class="cart">
@@ -390,13 +431,20 @@
 
     </div>
 
+
     <div id="cartItems"></div>
+
 
     <div class="cart-bottom">
 
       <div>
+
         <span>Total</span>
-        <strong id="cartTotal">₹0</strong>
+
+        <strong id="cartTotal">
+          ₹0
+        </strong>
+
       </div>
 
       <button onclick="checkout()">
@@ -410,7 +458,29 @@
 </div>
 
 
+<!-- SUPABASE CONNECTION -->
+
+<script>
+
+const SUPABASE_URL =
+  "https://prywmsmpnyvoskmnkckm.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_QWiT8eswERtvNgrHAxQZFw_SB8aHgMg";
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+</script>
+
+
+<!-- WEBSITE JAVASCRIPT -->
+
 <script src="script.js"></script>
+
 
 </body>
 </html>
