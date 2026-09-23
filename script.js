@@ -1,14 +1,12 @@
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
-
 let products = [];
 let cart = [];
 
-
-/* LOAD PRODUCTS FROM SUPABASE */
+/* =========================
+   LOAD PRODUCTS FROM SUPABASE
+========================= */
 
 async function loadProducts() {
+  console.log("Loading products from Supabase...");
 
   const { data, error } = await supabaseClient
     .from("products")
@@ -20,21 +18,33 @@ async function loadProducts() {
     return;
   }
 
+  console.log("Products received:", data);
+
   products = data || [];
 
   displayProducts(products);
 }
 
 
-/* SHOW PRODUCTS */
+/* =========================
+   SHOW PRODUCTS
+========================= */
 
 function displayProducts(list = products) {
 
   const container = document.getElementById("products");
 
-  if (!container) return;
+  if (!container) {
+    console.error("Products container not found.");
+    return;
+  }
 
   container.innerHTML = "";
+
+  if (!list || list.length === 0) {
+    container.innerHTML = "<p>No products available.</p>";
+    return;
+  }
 
   list.forEach(product => {
 
@@ -47,14 +57,13 @@ function displayProducts(list = products) {
       : `<div class="panther-icon"></div>`;
 
     card.innerHTML = `
-
       <div class="product-image">
         ${image}
       </div>
 
       <div class="product-info">
 
-        <h3>${product.name}</h3>
+        <h3>${product.name || ""}</h3>
 
         <p>
           Premium Canvas Store Collection
@@ -79,13 +88,13 @@ function displayProducts(list = products) {
     `;
 
     container.appendChild(card);
-
   });
-
 }
 
 
-/* FILTER */
+/* =========================
+   FILTER
+========================= */
 
 function filterProducts(category, button) {
 
@@ -98,23 +107,22 @@ function filterProducts(category, button) {
   }
 
   if (category === "all") {
-
     displayProducts(products);
-
   } else {
 
     displayProducts(
-      products.filter(
-        product => product.category === category
+      products.filter(product =>
+        product.category === category
       )
     );
 
   }
-
 }
 
 
-/* CART */
+/* =========================
+   CART
+========================= */
 
 function addToCart(id) {
 
@@ -126,7 +134,6 @@ function addToCart(id) {
   cart.push(product);
 
   updateCart();
-
 }
 
 
@@ -158,17 +165,14 @@ function updateCart() {
     item.className = "cart-item";
 
     item.innerHTML = `
-
       <div>
-
         <strong>
-          ${product.name}
+          ${product.name || ""}
         </strong>
 
         <br>
 
         ₹${Number(product.price || 0).toLocaleString("en-IN")}
-
       </div>
 
       <button
@@ -176,23 +180,18 @@ function updateCart() {
       >
         Remove
       </button>
-
     `;
 
     container.appendChild(item);
-
   });
 
   const totalElement =
     document.getElementById("cartTotal");
 
   if (totalElement) {
-
     totalElement.innerText =
       "₹" + total.toLocaleString("en-IN");
-
   }
-
 }
 
 
@@ -201,25 +200,28 @@ function removeFromCart(index) {
   cart.splice(index, 1);
 
   updateCart();
-
 }
 
 
 function openCart() {
 
-  document
-    .getElementById("overlay")
-    .classList.add("show");
+  const overlay =
+    document.getElementById("overlay");
 
+  if (overlay) {
+    overlay.classList.add("show");
+  }
 }
 
 
 function closeCart() {
 
-  document
-    .getElementById("overlay")
-    .classList.remove("show");
+  const overlay =
+    document.getElementById("overlay");
 
+  if (overlay) {
+    overlay.classList.remove("show");
+  }
 }
 
 
@@ -230,31 +232,35 @@ function checkout() {
     alert("Your bag is empty.");
 
     return;
-
   }
 
   alert(
     "Checkout system is ready to connect with Razorpay."
   );
-
 }
 
 
-/* NEWSLETTER */
+/* =========================
+   NEWSLETTER
+========================= */
 
 function subscribe(event) {
 
   event.preventDefault();
 
-  document.getElementById(
-    "subscribeMessage"
-  ).innerText =
-    "Thank you! Welcome to the Canvas Circle.";
+  const message =
+    document.getElementById("subscribeMessage");
 
+  if (message) {
+    message.innerText =
+      "Thank you! Welcome to the Canvas Circle.";
+  }
 }
 
 
-/* SEARCH */
+/* =========================
+   SEARCH
+========================= */
 
 function openSearch() {
 
@@ -265,7 +271,7 @@ function openSearch() {
 
   const result =
     products.filter(product =>
-      product.name
+      String(product.name || "")
         .toLowerCase()
         .includes(search.toLowerCase())
     );
@@ -276,17 +282,20 @@ function openSearch() {
 
   } else {
 
-    document
-      .getElementById("shop")
-      .scrollIntoView();
+    const shop =
+      document.getElementById("shop");
+
+    if (shop) {
+      shop.scrollIntoView();
+    }
 
     displayProducts(result);
-
   }
-
 }
 
 
-/* START WEBSITE */
+/* =========================
+   START WEBSITE
+========================= */
 
 loadProducts();
