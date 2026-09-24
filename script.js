@@ -1,188 +1,574 @@
-let products=[],
-shown=[],
-category='all',
-cart=JSON.parse(localStorage.getItem('canvas_cart')||'[]');
+/* =========================================================
+   CANVAS STORE - MAIN STORE SCRIPT
+   ========================================================= */
 
-const money=n=>'₹'+Number(n||0).toLocaleString('en-IN');
+let products = [];
+let shown = [];
+let category = 'all';
 
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({
-  '&':'&amp;',
-  '<':'&lt;',
-  '>':'&gt;',
-  '"':'&quot;',
-  "'":'&#39;'
-}[c]));
+let cart = JSON.parse(
+  localStorage.getItem('canvas_cart') || '[]'
+);
 
-function cat(v){
-  category=v;
-  document.querySelectorAll('.tabs button')
-    .forEach(b=>b.classList.toggle('active',b.dataset.cat===v));
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+const money = n =>
+  '₹' + Number(n || 0).toLocaleString('en-IN');
+
+
+const esc = s =>
+  String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c]));
+
+
+function getProductImages(product) {
+
+  let images = [];
+
+  /* New JSONB images column */
+  if (Array.isArray(product.images)) {
+    images = product.images
+      .filter(Boolean)
+      .map(x => String(x));
+  }
+
+  /* If images was returned as JSON text */
+  if (!images.length && typeof product.images === 'string') {
+    try {
+      const parsed = JSON.parse(product.images);
+
+      if (Array.isArray(parsed)) {
+        images = parsed
+          .filter(Boolean)
+          .map(x => String(x));
+      }
+    } catch (e) {
+      /* ignore invalid JSON */
+    }
+  }
+
+  /* Old single image column */
+  if (!images.length && product.image) {
+    images.push(String(product.image));
+  }
+
+  return [...new Set(images)];
+}
+
+
+function getMainImage(product) {
+
+  const images = getProductImages(product);
+
+  return images[0] || '';
+}
+
+
+/* =========================================================
+   CATEGORY
+   ========================================================= */
+
+function cat(v) {
+
+  category = v;
+
+  document
+    .querySelectorAll('.tabs button')
+    .forEach(button => {
+
+      button.classList.toggle(
+        'active',
+        button.dataset.cat === v
+      );
+
+    });
 
   apply();
 
-  document.getElementById('shop')
-    .scrollIntoView({behavior:'smooth'});
+  const shopSection =
+    document.getElementById('shop');
+
+  if (shopSection) {
+    shopSection.scrollIntoView({
+      behavior: 'smooth'
+    });
+  }
 }
 
-function kind(v){
-  v=String(v||'').toLowerCase();
 
-  if(v.includes('lamp')) return 'lamp';
-  if(v.includes('light')) return 'lighting';
-  if(v.includes('showpiece')||v.includes('statue')) return 'showpiece';
+/* =========================================================
+   PRODUCT CATEGORY DETECTION
+   ========================================================= */
+
+function kind(v) {
+
+  v = String(v || '').toLowerCase();
+
+  if (
+    v.includes('lamp') ||
+    v.includes('night lamp')
+  ) {
+    return 'lamp';
+  }
+
+  if (
+    v.includes('light') ||
+    v.includes('lighting')
+  ) {
+    return 'lighting';
+  }
+
+  if (
+    v.includes('showpiece') ||
+    v.includes('statue') ||
+    v.includes('panther') ||
+    v.includes('tower')
+  ) {
+    return 'showpiece';
+  }
 
   return 'decor';
 }
 
-function discount(p){
-  return Number(p.mrp)>Number(p.price)
-    ? Math.round((Number(p.mrp)-Number(p.price))/Number(p.mrp)*100)
-    : Number(p.discount||0);
+
+/* =========================================================
+   DISCOUNT
+   ========================================================= */
+
+function discount(product) {
+
+  const mrp = Number(product.mrp || 0);
+  const price = Number(product.price || 0);
+
+  if (mrp > price && mrp > 0) {
+
+    return Math.round(
+      ((mrp - price) / mrp) * 100
+    );
+
+  }
+
+  return Number(product.discount || 0);
 }
 
-async function load(){
 
-  try{
+/* =========================================================
+   LOAD PRODUCTS FROM SUPABASE
+   ========================================================= */
 
-    let r=await supabaseClient
-      .from('products')
-      .select('*')
-      .order('created_at',{ascending:false});
+async function load() {
 
-    if(r.error) throw r.error;
+  try {
 
-    products=r.data||[];
+    const result =
+      await supabaseClient
+        .from('products')
+        .select('*')
+        .order('created_at', {
+          ascending: false
+        });
+
+
+    if (result.error) {
+      throw result.error;
+    }
+
+
+    products = result.data || [];
 
     apply();
 
-  }catch(e){
+  } catch (error) {
 
-    console.error(e);
+    console.error(
+      'Canvas Store products error:',
+      error
+    );
 
-    document.getElementById('products').innerHTML=
-      '<div class="loading">Products could not be loaded. Refresh and try again.</div>';
+    const productBox =
+      document.getElementById('products');
+
+    if (productBox) {
+
+      productBox.innerHTML = `
+        <div class="loading">
+          Products could not be loaded.<br>
+          Please refresh and try again.
+        </div>
+      `;
+
+    }
+
   }
+
 }
 
-function apply(){
 
-  let q=(document.getElementById('search')?.value||'').toLowerCase();
+/* =========================================================
+   SEARCH + FILTER + SORT
+   ========================================================= */
 
-  let s=document.getElementById('sort')?.value||'latest';
+function apply() {
 
-  shown=products.filter(p=>
-    (category==='all'||kind(p.category)===category)&&
-    (!q||`${p.name} ${p.category} ${p.item_code}`
-      .toLowerCase()
-      .includes(q))
-  );
+  const searchInput =
+    document.getElementById('search');
 
-  if(s==='low')
-    shown.sort((a,b)=>a.price-b.price);
+  const sortInput =
+    document.getElementById('sort');
 
-  if(s==='high')
-    shown.sort((a,b)=>b.price-a.price);
 
-  if(s==='discount')
-    shown.sort((a,b)=>discount(b)-discount(a));
+  const q =
+    (searchInput?.value || '')
+      .trim()
+      .toLowerCase();
 
-  if(s==='name')
-    shown.sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+
+  const sort =
+    sortInput?.value || 'latest';
+
+
+  shown = products.filter(product => {
+
+    const categoryMatch =
+      category === 'all' ||
+      kind(product.category) === category;
+
+
+    const searchableText = [
+
+      product.name,
+      product.category,
+      product.item_code,
+      product.id
+
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+
+    const searchMatch =
+      !q ||
+      searchableText.includes(q);
+
+
+    return categoryMatch && searchMatch;
+
+  });
+
+
+  /* SORT */
+
+  if (sort === 'low') {
+
+    shown.sort(
+      (a, b) =>
+        Number(a.price || 0) -
+        Number(b.price || 0)
+    );
+
+  }
+
+
+  if (sort === 'high') {
+
+    shown.sort(
+      (a, b) =>
+        Number(b.price || 0) -
+        Number(a.price || 0)
+    );
+
+  }
+
+
+  if (sort === 'discount') {
+
+    shown.sort(
+      (a, b) =>
+        discount(b) -
+        discount(a)
+    );
+
+  }
+
+
+  if (sort === 'name') {
+
+    shown.sort(
+      (a, b) =>
+        String(a.name || '')
+          .localeCompare(
+            String(b.name || '')
+          )
+    );
+
+  }
+
 
   render();
+
 }
 
-function render(){
 
-  let el=document.getElementById('products');
+/* =========================================================
+   PRODUCT CARD
+   ========================================================= */
 
-  document.getElementById('summary').textContent=
-    `${shown.length} product${shown.length===1?'':'s'} available`;
+function render() {
 
-  if(!shown.length){
+  const productBox =
+    document.getElementById('products');
 
-    el.innerHTML='<div class="loading">No products found.</div>';
+  if (!productBox) return;
+
+
+  const summary =
+    document.getElementById('summary');
+
+  if (summary) {
+
+    summary.textContent =
+      `${shown.length} product${
+        shown.length === 1 ? '' : 's'
+      } available`;
+
+  }
+
+
+  if (!shown.length) {
+
+    productBox.innerHTML = `
+      <div class="loading">
+        No products found.
+      </div>
+    `;
 
     return;
   }
 
-  el.innerHTML=shown.map(p=>{
 
-    let d=discount(p);
+  productBox.innerHTML = shown.map(product => {
 
-    let out=Number(p.stock??1)<=0;
+    const d = discount(product);
+
+    const out =
+      Number(product.stock ?? 1) <= 0;
+
+    const image =
+      getMainImage(product);
+
 
     return `
-      <article class="card">
 
-        <div class="pic">
+      <article
+        class="product-card"
+        data-product-id="${esc(product.id)}"
+        onclick="openProduct('${esc(product.id)}')"
+      >
+
+        <div class="product-image">
 
           ${
-            p.image
-            ? `<img src="${esc(p.image)}" loading="lazy" alt="${esc(p.name)}">`
-            : '✨'
+            image
+
+              ? `
+                <img
+                  src="${esc(image)}"
+                  loading="lazy"
+                  alt="${esc(
+                    product.name ||
+                    'Canvas Store Product'
+                  )}"
+                >
+              `
+
+              : `
+                <span style="
+                  font-size:42px;
+                  opacity:.65;
+                ">
+                  ✨
+                </span>
+              `
           }
 
+
           ${
-            d
-            ? `<span class="badge">${d}% OFF</span>`
-            : ''
+            d > 0
+
+              ? `
+                <span class="discount-badge">
+                  ${d}% OFF
+                </span>
+              `
+
+              : ''
           }
+
 
           ${
             out
-            ? '<span class="out">OUT OF STOCK</span>'
-            : ''
+
+              ? `
+                <span class="out">
+                  OUT OF STOCK
+                </span>
+              `
+
+              : ''
           }
 
         </div>
 
-        <div class="body">
 
-          <div class="cat">
-            ${esc(p.category||'Home Décor')}
+        <div class="product-info">
+
+          <div style="
+            color:#878787;
+            font-size:10px;
+            margin-bottom:4px;
+          ">
+            ${esc(
+              product.category ||
+              'Home Décor'
+            )}
           </div>
 
-          <div class="title">
-            ${esc(p.name||'Premium Product')}
-          </div>
 
-          <span class="rating">
+          <h3>
+            ${esc(
+              product.name ||
+              'Premium Product'
+            )}
+          </h3>
+
+
+          <span
+            class="rating"
+            style="
+              display:inline-block;
+              background:#388e3c;
+              color:#fff;
+              padding:2px 5px;
+              font-size:10px;
+              border-radius:2px;
+              margin-bottom:6px;
+            "
+          >
             ★ 4.5
           </span>
 
-          <div>
 
-            <span class="price">
-              ${money(p.price)}
-            </span>
+          <div class="price-row">
 
-            ${
-              p.mrp
-              ? `<span class="mrp">${money(p.mrp)}</span>`
-              : ''
-            }
+            <strong>
+              ${money(product.price)}
+            </strong>
 
             ${
-              d
-              ? `<span class="off">${d}% off</span>`
-              : ''
+              product.mrp
+
+                ? `
+                  <del>
+                    ${money(product.mrp)}
+                  </del>
+                `
+
+                : ''
             }
 
           </div>
 
-          <button
-            class="add"
-            ${out?'disabled':''}
-            onclick="add('${esc(p.id)}')"
-          >
-            ${out?'OUT OF STOCK':'ADD TO CART'}
-          </button>
+
+          ${
+            d > 0
+
+              ? `
+                <span class="discount">
+                  ${d}% off
+                </span>
+              `
+
+              : ''
+          }
+
+
+          ${
+            product.item_code
+
+              ? `
+                <div style="
+                  color:#777;
+                  font-size:10px;
+                  margin-top:4px;
+                ">
+                  Item Code:
+                  ${esc(product.item_code)}
+                </div>
+              `
+
+              : ''
+          }
+
+
+          ${
+            out
+
+              ? `
+                <div class="stock"
+                  style="color:#d32f2f;">
+                  Out of Stock
+                </div>
+              `
+
+              : `
+                <div class="stock">
+                  ✓ In Stock
+                </div>
+              `
+          }
+
 
           <button
+            type="button"
+            class="add-cart"
+            ${out ? 'disabled' : ''}
+            onclick="
+              event.stopPropagation();
+              add('${esc(product.id)}');
+            "
+          >
+            ${out ? 'OUT OF STOCK' : 'ADD TO CART'}
+          </button>
+
+
+          <button
+            type="button"
             class="buy"
-            ${out?'disabled':''}
-            onclick="buy('${esc(p.id)}')"
+            ${out ? 'disabled' : ''}
+            onclick="
+              event.stopPropagation();
+              buy('${esc(product.id)}');
+            "
+            style="
+              width:100%;
+              height:34px;
+              border:0;
+              background:#fb641b;
+              color:#fff;
+              font-size:12px;
+              font-weight:700;
+              margin-top:7px;
+              cursor:pointer;
+            "
           >
             BUY NOW
           </button>
@@ -190,203 +576,491 @@ function render(){
         </div>
 
       </article>
+
     `;
 
   }).join('');
+
 }
 
-function add(id){
 
-  let p=products.find(x=>String(x.id)===String(id));
+/* =========================================================
+   OPEN PRODUCT DETAIL PAGE
+   ========================================================= */
 
-  if(!p||Number(p.stock??1)<=0) return;
+function openProduct(id) {
 
-  let i=cart.find(x=>String(x.id)===String(id));
+  if (!id) return;
 
-  i
-    ? i.qty++
-    : cart.push({
-        id:p.id,
-        name:p.name,
-        price:Number(p.price||0),
-        image:p.image||'',
-        qty:1
-      });
+  window.location.href =
+    'product.html?id=' +
+    encodeURIComponent(id);
+
+}
+
+
+/* =========================================================
+   ADD TO CART
+   ========================================================= */
+
+function add(id) {
+
+  const product =
+    products.find(
+      x => String(x.id) === String(id)
+    );
+
+
+  if (
+    !product ||
+    Number(product.stock ?? 1) <= 0
+  ) {
+
+    return;
+
+  }
+
+
+  const existing =
+    cart.find(
+      x => String(x.id) === String(id)
+    );
+
+
+  if (existing) {
+
+    existing.qty++;
+
+  } else {
+
+    cart.push({
+
+      id: product.id,
+
+      name: product.name,
+
+      price:
+        Number(product.price || 0),
+
+      image:
+        getMainImage(product),
+
+      qty: 1
+
+    });
+
+  }
+
 
   save();
 
   update();
 
   toast('Added to cart ✓');
+
 }
 
-function buy(id){
 
-  add(id);
+/* =========================================================
+   BUY NOW
+   ========================================================= */
 
-  openCart();
+function buy(id) {
+
+  const product =
+    products.find(
+      x => String(x.id) === String(id)
+    );
+
+
+  if (
+    !product ||
+    Number(product.stock ?? 1) <= 0
+  ) {
+
+    return;
+
+  }
+
+
+  const existing =
+    cart.find(
+      x => String(x.id) === String(id)
+    );
+
+
+  if (!existing) {
+
+    cart.push({
+
+      id: product.id,
+
+      name: product.name,
+
+      price:
+        Number(product.price || 0),
+
+      image:
+        getMainImage(product),
+
+      qty: 1
+
+    });
+
+  }
+
+
+  save();
+
+  update();
+
+
+  /* Directly open checkout */
+  window.location.href =
+    'checkout.html';
+
 }
 
-function save(){
+
+/* =========================================================
+   SAVE CART
+   ========================================================= */
+
+function save() {
 
   localStorage.setItem(
     'canvas_cart',
     JSON.stringify(cart)
   );
+
 }
 
-function update(){
 
-  document.getElementById('count').textContent=
-    cart.reduce((a,x)=>a+x.qty,0);
+/* =========================================================
+   UPDATE CART
+   ========================================================= */
 
-  let total=
-    cart.reduce((a,x)=>a+x.price*x.qty,0);
+function update() {
 
-  document.getElementById('total').textContent=
-    money(total);
+  const count =
+    document.getElementById('count');
 
-  document.getElementById('items').innerHTML=
-    cart.map(x=>`
+  const totalElement =
+    document.getElementById('total');
 
-      <div class="item">
+  const itemsElement =
+    document.getElementById('items');
 
-        <img
-          class="thumb"
-          src="${esc(x.image)}"
-        >
+  const emptyElement =
+    document.getElementById('empty');
 
-        <div class="info">
 
-          <b>${esc(x.name)}</b>
+  const quantity =
+    cart.reduce(
+      (total, item) =>
+        total + Number(item.qty || 0),
+      0
+    );
 
-          <strong>
-            ${money(x.price)}
-          </strong>
 
-          <div>
+  const subtotal =
+    cart.reduce(
+      (total, item) =>
+        total +
+        Number(item.price || 0) *
+        Number(item.qty || 0),
+      0
+    );
+
+
+  if (count) {
+    count.textContent = quantity;
+  }
+
+
+  if (totalElement) {
+    totalElement.textContent =
+      money(subtotal);
+  }
+
+
+  if (itemsElement) {
+
+    itemsElement.innerHTML =
+      cart.map(item => `
+
+        <div class="cart-item">
+
+          ${
+            item.image
+
+              ? `
+                <img
+                  src="${esc(item.image)}"
+                  alt="${esc(item.name)}"
+                >
+              `
+
+              : `
+                <div style="
+                  width:70px;
+                  height:70px;
+                  display:flex;
+                  align-items:center;
+                  justify-content:center;
+                  background:#f5f5f5;
+                  font-size:28px;
+                ">
+                  ✨
+                </div>
+              `
+          }
+
+
+          <div style="flex:1;">
+
+            <strong>
+              ${esc(item.name)}
+            </strong>
+
+
+            <p>
+              ${money(item.price)}
+            </p>
+
+
+            <div>
+
+              <button
+                type="button"
+                onclick="
+                  qty(
+                    '${esc(item.id)}',
+                    -1
+                  )
+                "
+              >
+                −
+              </button>
+
+
+              <span style="
+                margin:0 8px;
+                font-weight:700;
+              ">
+                ${item.qty}
+              </span>
+
+
+              <button
+                type="button"
+                onclick="
+                  qty(
+                    '${esc(item.id)}',
+                    1
+                  )
+                "
+              >
+                +
+              </button>
+
+            </div>
+
 
             <button
-              onclick="qty('${esc(x.id)}',-1)"
+              type="button"
+              onclick="
+                removeItem(
+                  '${esc(item.id)}'
+                )
+              "
             >
-              −
-            </button>
-
-            ${x.qty}
-
-            <button
-              onclick="qty('${esc(x.id)}',1)"
-            >
-              +
+              Remove
             </button>
 
           </div>
 
-          <button
-            class="remove"
-            onclick="removeItem('${esc(x.id)}')"
-          >
-            Remove
-          </button>
-
         </div>
 
-      </div>
+      `).join('');
 
-    `).join('');
+  }
 
-  document.getElementById('empty').style.display=
-    cart.length?'none':'block';
+
+  if (emptyElement) {
+
+    emptyElement.style.display =
+      cart.length ? 'none' : 'block';
+
+  }
+
 }
 
-function qty(id,d){
 
-  let x=cart.find(
-    i=>String(i.id)===String(id)
-  );
+/* =========================================================
+   QUANTITY
+   ========================================================= */
 
-  if(!x) return;
+function qty(id, change) {
 
-  x.qty+=d;
-
-  if(x.qty<1){
-
-    cart=cart.filter(
-      i=>String(i.id)!==String(id)
+  const item =
+    cart.find(
+      x => String(x.id) === String(id)
     );
 
+
+  if (!item) return;
+
+
+  item.qty += change;
+
+
+  if (item.qty < 1) {
+
+    cart =
+      cart.filter(
+        x => String(x.id) !== String(id)
+      );
+
   }
+
 
   save();
 
   update();
+
 }
 
-function removeItem(id){
 
-  cart=cart.filter(
-    i=>String(i.id)!==String(id)
-  );
+/* =========================================================
+   REMOVE ITEM
+   ========================================================= */
+
+function removeItem(id) {
+
+  cart =
+    cart.filter(
+      x => String(x.id) !== String(id)
+    );
+
 
   save();
 
   update();
+
 }
 
-function openCart(){
 
-  document.getElementById('overlay')
-    .classList.add('show');
+/* =========================================================
+   CART OPEN / CLOSE
+   ========================================================= */
+
+function openCart() {
+
+  const overlay =
+    document.getElementById('overlay');
+
+  if (!overlay) return;
+
+  overlay.classList.add('show');
 
   update();
-}
 
-function closeCart(e){
-
-  if(!e||e.target.id==='overlay'){
-
-    document.getElementById('overlay')
-      .classList.remove('show');
-
-  }
-}
-
-function shop(){
-
-  document.getElementById('shop')
-    .scrollIntoView({behavior:'smooth'});
 }
 
 
-/* CHECKOUT */
+function closeCart(event) {
 
-function checkout(){
+  if (
+    !event ||
+    event.target?.id === 'overlay'
+  ) {
 
-  if(!cart.length){
+    const overlay =
+      document.getElementById('overlay');
 
-    return toast('Your cart is empty');
+    if (overlay) {
+      overlay.classList.remove('show');
+    }
 
   }
 
-  window.location.href='checkout.html';
 }
 
 
-function toast(t){
+/* =========================================================
+   SHOP SCROLL
+   ========================================================= */
 
-  let x=document.getElementById('toast');
+function shop() {
 
-  x.textContent=t;
+  const section =
+    document.getElementById('shop');
 
-  x.classList.add('show');
+  if (section) {
 
-  clearTimeout(window.tt);
+    section.scrollIntoView({
+      behavior: 'smooth'
+    });
 
-  window.tt=setTimeout(
-    ()=>x.classList.remove('show'),
-    1600
-  );
+  }
+
 }
+
+
+/* =========================================================
+   CHECKOUT
+   ========================================================= */
+
+function checkout() {
+
+  if (!cart.length) {
+
+    toast('Your cart is empty');
+
+    return;
+
+  }
+
+
+  window.location.href =
+    'checkout.html';
+
+}
+
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+function toast(message) {
+
+  const element =
+    document.getElementById('toast');
+
+  if (!element) return;
+
+
+  element.textContent = message;
+
+  element.classList.add('show');
+
+  clearTimeout(window.canvasToastTimer);
+
+
+  window.canvasToastTimer =
+    setTimeout(() => {
+
+      element.classList.remove('show');
+
+    }, 1600);
+
+}
+
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
 
 load();
 
