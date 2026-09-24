@@ -1278,3 +1278,36 @@ footer a:hover {
   }
 
 }
+/* ===== CANVAS STORE PRODUCT IMAGE FIX ===== */
+
+.products {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+}
+
+.product-card {
+  padding: 10px !important;
+}
+
+.product-image {
+  height: 165px !important;
+  max-height: 165px !important;
+  overflow: hidden !important;
+}
+
+.product-image img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+/* MOBILE */
+@media (max-width: 750px) {
+  .products {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .product-image {
+    height: 150px !important;
+    max-height: 150px !important;
+  }
