@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Product - Canvas Store</title>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      color: #171717;
+    }
+
+    /* HEADER */
+    header {
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      padding: 16px 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: #111;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .logo span {
+      font-weight: 400;
+    }
+
+    .back-btn {
+      text-decoration: none;
+      color: #333;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    /* PRODUCT */
+    .container {
+      max-width: 1250px;
+      margin: 35px auto;
+      padding: 0 20px;
+    }
+
+    .product-box {
+      background: white;
+      border-radius: 18px;
+      padding: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 45px;
+      box-shadow: 0 8px 35px rgba(0,0,0,.07);
+    }
+
+    /* IMAGES */
+    .main-image-box {
+      height: 520px;
+      border-radius: 15px;
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid #eee;
+    }
+
+    .main-image-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 20px;
+    }
+
+    .thumbnails {
+      display: flex;
+      gap: 12px;
+      margin-top: 15px;
+      overflow-x: auto;
+    }
+
+    .thumb {
+      width: 85px;
+      height: 85px;
+      border: 2px solid #eee;
+      border-radius: 10px;
+      padding: 5px;
+      background: white;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .thumb.active {
+      border-color: #111;
+    }
+
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* DETAILS */
+    .details {
+      padding: 10px 0;
+    }
+
+    .item-code {
+      font-size: 13px;
+      color: #777;
+      margin-bottom: 12px;
+    }
+
+    .title {
+      font-size: 32px;
+      line-height: 1.2;
+      margin-bottom: 18px;
+    }
+
+    .price {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .mrp {
+      color: #888;
+      text-decoration: line-through;
+      font-size: 16px;
+    }
+
+    .discount {
+      color: #138a45;
+      font-weight: 700;
+      margin-left: 10px;
+    }
+
+    .stock {
+      display: inline-block;
+      margin: 20px 0;
+      padding: 8px 14px;
+      background: #eaf8ef;
+      color: #16833f;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .info-box {
+      border-top: 1px solid #eee;
+      border-bottom: 1px solid #eee;
+      padding: 18px 0;
+      margin: 10px 0 22px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 7px 0;
+      font-size: 15px;
+    }
+
+    .info-row span:first-child {
+      color: #777;
+    }
+
+    .info-row span:last-child {
+      font-weight: 600;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      border-radius: 10px;
+      padding: 15px 20px;
+      font-size: 16px;
+      font-weight: 700;
+      transition: .2s;
+    }
+
+    .cart-btn {
+      background: #fff;
+      border: 1px solid #111;
+      color: #111;
+      flex: 1;
+    }
+
+    .cart-btn:hover {
+      background: #f2f2f2;
+    }
+
+    .buy-btn {
+      background: #111;
+      color: white;
+      flex: 1;
+    }
+
+    .buy-btn:hover {
+      background: #333;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 100px 20px;
+      font-size: 18px;
+    }
+
+    .error {
+      text-align: center;
+      padding: 100px 20px;
+    }
+
+    .error h2 {
+      margin-bottom: 15px;
+    }
+
+    .error a {
+      color: #111;
+      font-weight: bold;
+    }
+
+    /* MOBILE */
+    @media(max-width: 800px) {
+
+      header {
+        padding: 14px 18px;
+      }
+
+      .logo {
+        font-size: 21px;
+      }
+
+      .product-box {
+        grid-template-columns: 1fr;
+        padding: 18px;
+        gap: 25px;
+      }
+
+      .main-image-box {
+        height: 380px;
+      }
+
+      .title {
+        font-size: 25px;
+      }
+
+      .price {
+        font-size: 27px;
+      }
+
+      .buttons {
+        position: sticky;
+        bottom: 10px;
+        z-index: 20;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <a href="index.html" class="logo">
+    Canvas <span>Store</span>
+  </a>
+
+  <a href="index.html" class="back-btn">
+    ← Back to Store
+  </a>
+</header>
+
+<div id="loading" class="loading">
+  Loading product...
+</div>
+
+<div id="error" class="error" style="display:none;">
+  <h2>Product not found</h2>
+  <p>Sorry, this product could not be loaded.</p>
+  <br>
+  <a href="index.html">← Return to Store</a>
+</div>
+
+<main class="container" id="productContainer" style="display:none;">
+
+  <div class="product-box">
+
+    <!-- IMAGES -->
+    <div>
+
+      <div class="main-image-box">
+        <img id="mainImage" src="" alt="Product">
+      </div>
+
+      <div class="thumbnails" id="thumbnails"></div>
+
+    </div>
+
+    <!-- DETAILS -->
+    <div class="details">
+
+      <div class="item-code" id="itemCode"></div>
+
+      <h1 class="title" id="productName"></h1>
+
+      <div>
+        <span class="price" id="price"></span>
+        <span class="mrp" id="mrp"></span>
+        <span class="discount" id="discount"></span>
+      </div>
+
+      <div class="stock" id="stock">
+        In Stock
+      </div>
+
+      <div class="info-box">
+
+        <div class="info-row">
+          <span>Category</span>
+          <span id="category">-</span>
+        </div>
+
+        <div class="info-row">
+          <span>Length</span>
+          <span id="length">-</span>
+        </div>
+
+        <div class="info-row">
+          <span>Width</span>
+          <span id="width">-</span>
+        </div>
+
+        <div class="info-row">
+          <span>Height</span>
+          <span id="height">-</span>
+        </div>
+
+        <div class="info-row">
+          <span>Weight</span>
+          <span id="weight">-</span>
+        </div>
+
+      </div>
+
+      <div class="buttons">
+
+        <button class="cart-btn" onclick="addToCart()">
+          🛒 Add to Cart
+        </button>
+
+        <button class="buy-btn" onclick="buyNow()">
+          Buy Now
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</main>
+
+<script>
+
+const SUPABASE_URL =
+"https://prywmsmpnyvoskmnkckm.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_QWiT8eswERtvNgrHAxQZFw_SB8aHgMg";
+
+const supabaseClient =
+supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let product = null;
+
+
+/* GET PRODUCT ID */
+
+const params = new URLSearchParams(window.location.search);
+const productId = params.get("id");
+
+
+/* LOAD PRODUCT */
+
+async function loadProduct() {
+
+  if (!productId) {
+    showError();
+    return;
+  }
+
+  try {
+
+    const { data, error } = await supabaseClient
+      .from("products")
+      .select("*")
+      .eq("id", productId)
+      .single();
+
+    if (error || !data) {
+      console.error(error);
+      showError();
+      return;
+    }
+
+    product = data;
+
+    displayProduct(data);
+
+  } catch (err) {
+
+    console.error(err);
+    showError();
+
+  }
+}
+
+
+/* DISPLAY */
+
+function displayProduct(p) {
+
+  document.getElementById("loading").style.display = "none";
+
+  document.getElementById("productContainer").style.display = "block";
+
+  document.getElementById("productName").textContent =
+    p.name || p.product_name || "Canvas Store Product";
+
+  document.getElementById("itemCode").textContent =
+    p.item_code ? "Item Code: " + p.item_code : "";
+
+  document.getElementById("price").textContent =
+    p.price ? "₹" + Number(p.price).toLocaleString("en-IN") : "";
+
+  if (p.mrp) {
+    document.getElementById("mrp").textContent =
+      "₹" + Number(p.mrp).toLocaleString("en-IN");
+  }
+
+  if (p.discount) {
+    document.getElementById("discount").textContent =
+      p.discount + "% OFF";
+  } else if (p.mrp && p.price) {
+
+    const d = Math.round(
+      ((Number(p.mrp) - Number(p.price)) /
+      Number(p.mrp)) * 100
+    );
+
+    if (d > 0)
+      document.getElementById("discount").textContent =
+        d + "% OFF";
+  }
+
+  document.getElementById("category").textContent =
+    p.category || "-";
+
+  document.getElementById("length").textContent =
+    p.length ? p.length + " cm" : "-";
+
+  document.getElementById("width").textContent =
+    (p.width || p.breadth)
+      ? (p.width || p.breadth) + " cm"
+      : "-";
+
+  document.getElementById("height").textContent =
+    p.height ? p.height + " cm" : "-";
+
+  document.getElementById("weight").textContent =
+    p.weight
+      ? p.weight + " g"
+      : "-";
+
+
+  /* IMAGES */
+
+  let images = [];
+
+  const possibleImages = [
+    p.image_url,
+    p.image,
+    p.image1,
+    p.image2,
+    p.image3,
+    p.image4,
+    p.image5,
+    p.image_url1,
+    p.image_url2,
+    p.image_url3
+  ];
+
+  possibleImages.forEach(img => {
+
+    if (
+      img &&
+      typeof img === "string" &&
+      !images.includes(img)
+    ) {
+      images.push(img);
+    }
+
+  });
+
+
+  if (images.length === 0) {
+
+    document.getElementById("mainImage").src =
+      "https://via.placeholder.com/600x600?text=Canvas+Store";
+
+  } else {
+
+    document.getElementById("mainImage").src =
+      images[0];
+
+    const thumbnails =
+      document.getElementById("thumbnails");
+
+    images.forEach((img, index) => {
+
+      const div = document.createElement("div");
+
+      div.className =
+        "thumb" + (index === 0 ? " active" : "");
+
+      div.innerHTML =
+        `<img src="${img}" alt="Product image">`;
+
+      div.onclick = () => {
+
+        document.getElementById("mainImage").src = img;
+
+        document.querySelectorAll(".thumb")
+          .forEach(x => x.classList.remove("active"));
+
+        div.classList.add("active");
+
+      };
+
+      thumbnails.appendChild(div);
+
+    });
+
+  }
+
+}
+
+
+/* ADD TO CART */
+
+function addToCart() {
+
+  if (!product) return;
+
+  let cart =
+    JSON.parse(localStorage.getItem("canvas_cart") || "[]");
+
+  const existing =
+    cart.find(x => String(x.id) === String(product.id));
+
+  if (existing) {
+
+    existing.quantity =
+      (existing.quantity || 1) + 1;
+
+  } else {
+
+    cart.push({
+      id: product.id,
+      name: product.name || product.product_name,
+      price: Number(product.price || 0),
+      mrp: Number(product.mrp || 0),
+      image:
+        product.image_url ||
+        product.image ||
+        product.image1 ||
+        "",
+      quantity: 1
+    });
+
+  }
+
+  localStorage.setItem(
+    "canvas_cart",
+    JSON.stringify(cart)
+  );
+
+  alert("Product added to cart 🛒");
+
+}
+
+
+/* BUY NOW */
+
+function buyNow() {
+
+  addToCart();
+
+  setTimeout(() => {
+    window.location.href = "checkout.html";
+  }, 300);
+
+}
+
+
+/* ERROR */
+
+function showError() {
+
+  document.getElementById("loading").style.display =
+    "none";
+
+  document.getElementById("error").style.display =
+    "block";
+
+}
+
+
+loadProduct();
+
+</script>
+
+</body>
+</html>
